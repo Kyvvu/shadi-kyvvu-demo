@@ -1,0 +1,5 @@
+{
+  "read":  ["__AGENT_DIR__"],
+  "write": ["__OUT_DIR__"],
+  "net_block": true
+}

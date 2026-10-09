@@ -1,0 +1,13 @@
+# The one Kyvvu policy this demo needs.
+name: "SHADI demo: code execution requires a preceding gate"
+version: "1.0.0"
+policies:
+  - name: "Code execution requires a preceding gate"
+    description: |
+      Any step.exec must be preceded by a step.gate whose guard passed.
+      Same rule as in Kyvvu's bundled OWASP baseline (ASI05).
+    rule_type: step_requires_gate
+    params:
+      target_step_types: ["step.exec"]
+    severity: critical
+    enforcement_point: step_execution
