@@ -40,7 +40,7 @@ set for the process tree, and that Kyvvu itself cannot be altered.
 
 Requirements: `python3` (3.12 or newer), `git`, `curl`. If the installer cannot
 resolve the latest SHADI release (GitHub API unreachable or rate-limited), run
-`SHADI_VERSION=0.1.11 ./run.sh setup`.
+`SHADI_VERSION=0.2.0 ./run.sh setup`.
 
 ## The four scenarios
 
@@ -70,6 +70,7 @@ generated directories.
 |---|---|---|---|---|
 | 2026-10-09 | 0.1.11 | 0.22.1 / 0.12.0 | 3.14 | macOS, Apple Silicon (Seatbelt; `Errno 1 Operation not permitted`) |
 | 2026-10-09 | 0.1.11 | 0.22.1 / 0.12.0 | 3.13 | Linux 6.18 (Landlock; `Errno 13 Permission denied`) |
+| 2026-10-13 | 0.2.0 | 0.22.1 / 0.12.0 | 3.13 | Linux 6.18 (Landlock; `Errno 13 Permission denied`) |
 
 `run.sh` pins `kyvvu==0.22.1`; override with `KYVVU_VERSION=...`.
 
