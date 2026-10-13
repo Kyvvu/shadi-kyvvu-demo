@@ -33,11 +33,14 @@ Operating contract for this repo. README.md has the narrative.
 ## Environment facts (verified 2026-09-20; all four runs re-verified 2026-10-09)
 - 2026-09-20: shadictl 0.1.10, Linux 6.18, Landlock ABI 7; kyvvu 0.20.0, kyvvu-engine 0.11.0, Python 3.12.
 - 2026-10-09: shadictl 0.1.11; kyvvu 0.22.1, kyvvu-engine 0.12.0. Linux 6.18 / Python 3.13 and macOS Apple Silicon (Seatbelt) / Python 3.14. Same outcomes.
+- 2026-10-13: shadictl 0.2.0; kyvvu 0.22.1, kyvvu-engine 0.12.0. Linux 6.18 / Python 3.13. Same outcomes.
 - `run.sh` pins `kyvvu==0.22.1` (`KYVVU_VERSION` overrides). Bump it only after re-running all four scenarios.
-- If the installer cannot resolve the latest release (GitHub API unreachable or rate-limited), run `SHADI_VERSION=0.1.11 ./run.sh setup`. The installer places `shadictl` in `/usr/local/bin` or `~/.local/bin`.
-- `net_allow` without `--watch-policy`: Linux blocks all hosts, macOS allows all hosts (reported upstream on agntcy/shadi).
+- If the installer cannot resolve the latest release (GitHub API unreachable or rate-limited), run `SHADI_VERSION=0.2.0 ./run.sh setup`. The installer places `shadictl` in `/usr/local/bin` or `~/.local/bin`.
 - Landlock is inherited by all descendants; `subprocess.run` needs no configuration.
-- `net_allow` only works with `shadictl --watch-policy` (loopback SOCKS5 proxy + kernel port pin). Without the flag, Linux blocks all outbound TCP, including the allowed hosts. `urllib` and `requests` cannot use the SOCKS5 proxy. Entries of the form `host:port` do not match in the proxy; use `host`.
+- Network facts below were checked on shadictl 0.2.0, Linux. The 0.1.11 findings (agntcy/shadi #340, #430, #431) are fixed in 0.2.0.
+- `net_allow` with `shadictl --watch-policy` (loopback proxy, HTTP and SOCKS5): the allowed host is reachable and any other host gets `403` from the proxy. An entry `host:port` allows that port only: with `example.com:443`, `http://example.com` is refused.
+- Under `--watch-policy`, `curl`, `urllib` and `requests` reach an allowed host. `httpx` raises an ImportError about `socksio`, because `ALL_PROXY` is set to `socks5h://`; install `httpx[socks]` or unset `ALL_PROXY` in the child.
+- `net_allow` without `--watch-policy`: an entry needs a port (`example.com` alone is refused at launch with a message). Enforcement is then per port, so `example.com:443` leaves every host on port 443 reachable.
 - `block_command` applies to the top-level launched command only.
 - Landlock does not govern `utime`/`chmod`; test writes with `open(..., "a")`.
 - Kyvvu's full bundled baseline needs declared tools, which SDK 0.20.0 only accepts via `register_agent()` + API key. Keep the single-rule manifest.

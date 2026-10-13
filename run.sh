@@ -32,7 +32,7 @@ setup() {
   }
   command -v shadictl >/dev/null || {
     echo "shadictl not on PATH. If the installer could not resolve the latest release, pin it:"
-    echo "  SHADI_VERSION=0.1.11 ./run.sh setup"
+    echo "  SHADI_VERSION=0.2.0 ./run.sh setup"
     exit 1
   }
   mkdir -p "$AGENT" "$OUT"
