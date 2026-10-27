@@ -71,6 +71,7 @@ generated directories.
 | 2026-10-09 | 0.1.11 | 0.22.1 / 0.12.0 | 3.14 | macOS, Apple Silicon (Seatbelt; `Errno 1 Operation not permitted`) |
 | 2026-10-09 | 0.1.11 | 0.22.1 / 0.12.0 | 3.13 | Linux 6.18 (Landlock; `Errno 13 Permission denied`) |
 | 2026-10-13 | 0.2.0 | 0.22.1 / 0.12.0 | 3.13 | Linux 6.18 (Landlock; `Errno 13 Permission denied`) |
+| 2026-10-27 | 0.2.0 | 0.22.1 / 0.12.0 | 3.14 | macOS, Apple Silicon (Seatbelt; `Errno 1 Operation not permitted`) |
 
 `run.sh` pins `kyvvu==0.22.1`; override with `KYVVU_VERSION=...`.
 
