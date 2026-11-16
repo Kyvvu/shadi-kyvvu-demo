@@ -29,12 +29,13 @@ jobs:
     timeout-minutes: 15
     env:
       KYVVU_VERSION: ${{ inputs.kyvvu_version }}
+      # The system interpreter (3.12 on ubuntu-24.04), as a newcomer has it.
+      # Not actions/setup-python: its interpreter lives in /opt/hostedtoolcache,
+      # outside what the SHADI sandbox lets the agent read, so 3a/3b could not
+      # even start ("spawn failed: Permission denied").
+      PYTHON: /usr/bin/python3
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
 
       - name: Setup, as a newcomer runs it
         run: |
