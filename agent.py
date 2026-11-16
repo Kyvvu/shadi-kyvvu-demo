@@ -34,7 +34,7 @@ import subprocess
 import sys
 
 from kyvvu import ActionKind, Kyvvu, KyvvuBlockedError, RiskClassification, Verb
-from kyvvu_engine.io.settings import KyvvuSettings
+from kyvvu_engine import KyvvuSettings
 
 HERE = pathlib.Path(__file__).resolve().parent
 OUT = pathlib.Path(os.environ.get("AGENT_OUT", HERE / "out"))
