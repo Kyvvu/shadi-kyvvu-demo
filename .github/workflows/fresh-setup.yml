@@ -1,0 +1,71 @@
+# Runs the demo the way a newcomer does: a fresh runner, `./run.sh setup`,
+# then the four scenarios, each checked against the outcome in AGENTS.md.
+#
+# Weekly, because the demo pins exact releases but installs their
+# dependencies fresh: a later release of a dependency can break a fresh
+# setup without any change here. That is how the demo was broken from
+# 2026-10-17 to 2026-11-16 unnoticed (Kyvvu/platform#1055).
+name: Fresh setup
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"   # Mondays 06:17 UTC
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      kyvvu_version:
+        description: "kyvvu SDK version to install (empty: the one run.sh pins)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  scenarios:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      KYVVU_VERSION: ${{ inputs.kyvvu_version }}
+      # The system interpreter (3.12 on ubuntu-24.04), as a newcomer has it.
+      # Not actions/setup-python: its interpreter lives in /opt/hostedtoolcache,
+      # outside what the SHADI sandbox lets the agent read, so 3a/3b could not
+      # even start ("spawn failed: Permission denied").
+      PYTHON: /usr/bin/python3
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup, as a newcomer runs it
+        run: |
+          # An empty KYVVU_VERSION would override run.sh's pin with nothing.
+          [ -n "$KYVVU_VERSION" ] || unset KYVVU_VERSION
+          export PATH="$HOME/.local/bin:$PATH"
+          ./run.sh setup
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          my-agent/.venv/bin/pip list 2>/dev/null | grep -i -E '^kyvvu'
+          shadictl --version || true
+
+      - name: "1: Kyvvu permits; the generated code rewrites agent.py"
+        run: |
+          ./run.sh 1 | tee out-1.txt
+          grep -q 'agent.py modified' out-1.txt
+
+      - name: "2: no approval gate, so Kyvvu refuses run_code"
+        run: |
+          ./run.sh 2 | tee out-2.txt
+          grep -q 'Kyvvu blocked: .*Code execution requires a preceding gate' out-2.txt
+          grep -q 'agent directory unchanged' out-2.txt
+
+      - name: "3a: under SHADI, harmless code writes result.txt"
+        run: |
+          ./run.sh 3a | tee out-3a.txt
+          grep -q 'result.txt: 42' out-3a.txt
+          grep -q 'agent directory unchanged' out-3a.txt
+
+      - name: "3b: under SHADI, the kernel refuses the write to agent.py"
+        run: |
+          ./run.sh 3b 2>&1 | tee out-3b.txt
+          grep -q 'PermissionError' out-3b.txt
+          grep -q 'agent directory unchanged' out-3b.txt
