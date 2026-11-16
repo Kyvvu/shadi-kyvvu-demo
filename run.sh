@@ -14,8 +14,7 @@ AGENT=$PKG/my-agent                  # read-only under SHADI: agent, manifest, v
 OUT=$PKG/agent-out                   # the only directory SHADI lets the agent write to
 PY=$AGENT/.venv/bin/python
 PYTHON=${PYTHON:-python3}            # interpreter used to create the venv (3.12 or newer)
-KYVVU_VERSION=${KYVVU_VERSION:-0.22.1}  # the kyvvu SDK release the outcomes below were verified with
-KYVVU_ENGINE_VERSION=${KYVVU_ENGINE_VERSION:-0.12.0}  # its engine: 0.22.1 admits 0.13.0, which it cannot import
+KYVVU_VERSION=${KYVVU_VERSION:-1.1.0}  # the kyvvu SDK release the outcomes below were verified with
 export SHADI_VERSION=${SHADI_VERSION:-0.2.0}  # the shadictl release the outcomes were verified with; the installer's "latest" lookup can pick an unrelated AGNTCY tag
 
 export AGENT_OUT=$OUT
@@ -40,7 +39,7 @@ setup() {
   mkdir -p "$AGENT" "$OUT"
   cp "$PKG"/agent.py "$PKG"/demo-manifest.yaml "$AGENT"/
   sed "s#__AGENT_DIR__#$AGENT#; s#__OUT_DIR__#$OUT#" "$PKG"/sandbox.json > "$AGENT"/sandbox.json
-  [ -x "$PY" ] || { "$PYTHON" -m venv "$AGENT/.venv" && "$AGENT/.venv/bin/pip" install -q "kyvvu==$KYVVU_VERSION" "kyvvu-engine==$KYVVU_ENGINE_VERSION"; }
+  [ -x "$PY" ] || { "$PYTHON" -m venv "$AGENT/.venv" && "$AGENT/.venv/bin/pip" install -q "kyvvu==$KYVVU_VERSION"; }
   cd "$AGENT" && git init -q 2>/dev/null; git add -A
   git -c user.name=demo -c user.email=demo@localhost commit -qm pristine 2>/dev/null || true
   echo "ready: $AGENT (read-only under SHADI), $OUT (writable)"

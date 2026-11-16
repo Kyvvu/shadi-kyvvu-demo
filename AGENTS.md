@@ -19,7 +19,7 @@ Operating contract for this repo. README.md has the narrative.
 1. `shadictl` runs with cwd `agent-out/`. From `my-agent/` the profile makes it writable and 3b proves nothing.
 2. `sandbox.json`: `read` = `my-agent` (contains `.venv`), `write` = `agent-out` only, `net_block: true`.
 3. Manifest passed via `KyvvuSettings(policy_file=..., explicit_fields={"policy_file", ...})`; env `KV_POLICY_FILE` is not equivalent when `KV_API_KEY` is set. `run.sh` unsets `KV_API_KEY`.
-4. Gate recorded as `kv.add_step(StepType.step_gate, "human_approval", properties={"guard": {"result": "pass"}})`; a gate without `guard.result == "pass"` does not satisfy the rule.
+4. Gate recorded as `kv.add_step(ActionKind.step_gate, "human_approval", properties={"kind": "human"}, output={"decision": "pass"})`; a gate without `output.decision == "pass"` (no decision, or `deny`) does not satisfy the rule. The manifest names its target as `target_kinds`.
 5. Trace goes to `agent-out/kyvvu-trace.jsonl` (`log_location` = file path).
 
 ## Expected outcomes
@@ -34,7 +34,8 @@ Operating contract for this repo. README.md has the narrative.
 - 2026-09-20: shadictl 0.1.10, Linux 6.18, Landlock ABI 7; kyvvu 0.20.0, kyvvu-engine 0.11.0, Python 3.12.
 - 2026-10-09: shadictl 0.1.11; kyvvu 0.22.1, kyvvu-engine 0.12.0. Linux 6.18 / Python 3.13 and macOS Apple Silicon (Seatbelt) / Python 3.14. Same outcomes.
 - 2026-10-13: shadictl 0.2.0; kyvvu 0.22.1, kyvvu-engine 0.12.0. Linux 6.18 / Python 3.13. Same outcomes.
-- `run.sh` pins `kyvvu==0.22.1` and `kyvvu-engine==0.12.0` (`KYVVU_VERSION`, `KYVVU_ENGINE_VERSION` override). Pin both: 0.22.1 declares `kyvvu-engine<1.0.0`, which admits 0.13.0 (2026-10-17), and 0.13.0 renamed what 0.22.1 imports, so `import kyvvu` fails. Bump only after re-running all four scenarios.
+- 2026-11-16: ported to kyvvu 1.1.0 (engine 1.1.0): `ActionKind` for `StepType`, `target_kinds` for `target_step_types`, gate decision in `output`. shadictl 0.2.0, Linux 7.0 (Landlock, in a clean `python:3.12` container). Same outcomes.
+- `run.sh` pins `kyvvu==1.1.0` (`KYVVU_VERSION` overrides). SDK 1.1.0 requires `kyvvu-engine>=1.0.0,<2.0.0`, and the engine stays compatible within a major version, so the engine needs no separate pin. Bump only after re-running all four scenarios. Before 1.x the engine had to be pinned too: SDK 0.22.1 admitted engine 0.13.0, which it could not import.
 - `run.sh` pins `SHADI_VERSION=0.2.0` for the installer (override with the variable). Unpinned, the installer resolves "latest" across all AGNTCY releases and, since `agntcy-agentbridge-cli-v0.3.0`, aborts: `latest release tag agntcy-agentbridge-cli-v0.3.0 does not match agntcy-shadi-cli-v<version>`. The installer places `shadictl` in `/usr/local/bin` or `~/.local/bin`.
 - Landlock is inherited by all descendants; `subprocess.run` needs no configuration.
 - Network facts below were checked on shadictl 0.2.0, Linux. The 0.1.11 findings (agntcy/shadi #340, #430, #431) are fixed in 0.2.0.

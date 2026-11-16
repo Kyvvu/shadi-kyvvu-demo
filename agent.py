@@ -33,7 +33,7 @@ import pathlib
 import subprocess
 import sys
 
-from kyvvu import Kyvvu, KyvvuBlockedError, RiskClassification, StepType, Verb
+from kyvvu import ActionKind, Kyvvu, KyvvuBlockedError, RiskClassification, Verb
 from kyvvu_engine.io.settings import KyvvuSettings
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -83,14 +83,14 @@ def build_kernel() -> Kyvvu:
 kv = build_kernel()
 
 
-@kv.step(StepType.step_resource, Verb.POST)
+@kv.step(ActionKind.step_resource, Verb.POST)
 def write_code(path: str, code: str) -> str:
     """Tool: writes generated source to ``path``."""
     pathlib.Path(path).write_text(code)
     return f"wrote {len(code)} bytes to {path}"
 
 
-@kv.step(StepType.step_exec)
+@kv.step(ActionKind.step_exec)
 def run_code(path: str) -> str:
     """Tool: runs ``path`` with the current interpreter and returns its output.
 
@@ -105,11 +105,16 @@ def run_code(path: str) -> str:
 
 
 def record_approval_gate() -> None:
-    """Records a human-approval gate so the exec rule is satisfied."""
+    """Records a human-approval gate so the exec rule is satisfied.
+
+    Only a gate that carries a ``pass`` decision clears the rule; one with no
+    decision, or with ``deny``, does not.
+    """
     kv.add_step(
-        StepType.step_gate,
+        ActionKind.step_gate,
         "human_approval",
-        properties={"guard": {"result": "pass"}},
+        properties={"kind": "human"},
+        output={"decision": "pass"},
     )
 
 
@@ -147,7 +152,7 @@ def main(argv: list[str]) -> int:
         print("  ", write_code(scratch, GENERATED_CODE[args.mode]))
         if not args.no_gate:
             record_approval_gate()
-            step("step.gate", "human_approval (guard: pass)")
+            step("step.gate", "human_approval (decision: pass)")
         else:
             step("step.gate", "— skipped, so the next step has no approval")
         step("step.exec", "run_code")
