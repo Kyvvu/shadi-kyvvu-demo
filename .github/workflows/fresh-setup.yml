@@ -25,24 +25,49 @@ permissions:
 
 jobs:
   scenarios:
+    name: "scenarios (${{ matrix.python }} Python)"
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # Where the venv's interpreter lives. Under SHADI the agent must be able
+        # to read it; run.sh adds its base installation to the sandbox's `read`.
+        python: [system, setup-python, uv]
     env:
       KYVVU_VERSION: ${{ inputs.kyvvu_version }}
-      # The system interpreter (3.12 on ubuntu-24.04), as a newcomer has it.
-      # Not actions/setup-python: its interpreter lives in /opt/hostedtoolcache,
-      # outside what the SHADI sandbox lets the agent read, so 3a/3b could not
-      # even start ("spawn failed: Permission denied").
-      PYTHON: /usr/bin/python3
     steps:
       - uses: actions/checkout@v4
+
+      - name: "Interpreter: system (/usr/bin/python3)"
+        if: matrix.python == 'system'
+        run: echo "PYTHON=/usr/bin/python3" >> "$GITHUB_ENV"
+
+      - name: "Interpreter: actions/setup-python (/opt/hostedtoolcache)"
+        if: matrix.python == 'setup-python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: "Interpreter: setup-python into PYTHON"
+        if: matrix.python == 'setup-python'
+        run: echo "PYTHON=$(command -v python3)" >> "$GITHUB_ENV"
+
+      - name: "Interpreter: uv-managed (~/.local/share/uv)"
+        if: matrix.python == 'uv'
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          "$HOME/.local/bin/uv" python install 3.12
+          echo "PYTHON=$("$HOME/.local/bin/uv" python find 3.12)" >> "$GITHUB_ENV"
 
       - name: Setup, as a newcomer runs it
         run: |
           # An empty KYVVU_VERSION would override run.sh's pin with nothing.
           [ -n "$KYVVU_VERSION" ] || unset KYVVU_VERSION
           export PATH="$HOME/.local/bin:$PATH"
+          echo "PYTHON=$PYTHON"
           ./run.sh setup
+          echo "--- my-agent/sandbox.json"; cat my-agent/sandbox.json
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           my-agent/.venv/bin/pip list 2>/dev/null | grep -i -E '^kyvvu'
           shadictl --version || true

@@ -38,8 +38,23 @@ setup() {
   }
   mkdir -p "$AGENT" "$OUT"
   cp "$PKG"/agent.py "$PKG"/demo-manifest.yaml "$AGENT"/
-  sed "s#__AGENT_DIR__#$AGENT#; s#__OUT_DIR__#$OUT#" "$PKG"/sandbox.json > "$AGENT"/sandbox.json
   [ -x "$PY" ] || { "$PYTHON" -m venv "$AGENT/.venv" && "$AGENT/.venv/bin/pip" install -q "kyvvu==$KYVVU_VERSION"; }
+  # The venv's interpreter and standard library live in its base installation
+  # (/usr, pyenv, uv, Homebrew, actions/setup-python ...). The agent must be
+  # able to READ it under SHADI or it cannot even start, so the base prefix is
+  # added to the read-only list. Nothing is added to `write`.
+  "$PY" - "$PKG/sandbox.json" "$AGENT" "$OUT" > "$AGENT/sandbox.json" <<'EOF'
+import json, os, sys
+template, agent, out = sys.argv[1:4]
+policy = json.load(open(template))
+policy["read"] = [agent if p == "__AGENT_DIR__" else p for p in policy["read"]]
+policy["write"] = [out if p == "__OUT_DIR__" else p for p in policy["write"]]
+for prefix in (sys.base_prefix, os.path.realpath(sys.base_prefix)):
+    if prefix not in policy["read"]:
+        policy["read"].append(prefix)
+json.dump(policy, sys.stdout, indent=2)
+print()
+EOF
   cd "$AGENT" && git init -q 2>/dev/null; git add -A
   git -c user.name=demo -c user.email=demo@localhost commit -qm pristine 2>/dev/null || true
   echo "ready: $AGENT (read-only under SHADI), $OUT (writable)"
