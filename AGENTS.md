@@ -34,8 +34,8 @@ Operating contract for this repo. README.md has the narrative.
 - 2026-09-20: shadictl 0.1.10, Linux 6.18, Landlock ABI 7; kyvvu 0.20.0, kyvvu-engine 0.11.0, Python 3.12.
 - 2026-10-09: shadictl 0.1.11; kyvvu 0.22.1, kyvvu-engine 0.12.0. Linux 6.18 / Python 3.13 and macOS Apple Silicon (Seatbelt) / Python 3.14. Same outcomes.
 - 2026-10-13: shadictl 0.2.0; kyvvu 0.22.1, kyvvu-engine 0.12.0. Linux 6.18 / Python 3.13. Same outcomes.
-- `run.sh` pins `kyvvu==0.22.1` (`KYVVU_VERSION` overrides). Bump it only after re-running all four scenarios.
-- If the installer cannot resolve the latest release (GitHub API unreachable or rate-limited), run `SHADI_VERSION=0.2.0 ./run.sh setup`. The installer places `shadictl` in `/usr/local/bin` or `~/.local/bin`.
+- `run.sh` pins `kyvvu==0.22.1` and `kyvvu-engine==0.12.0` (`KYVVU_VERSION`, `KYVVU_ENGINE_VERSION` override). Pin both: 0.22.1 declares `kyvvu-engine<1.0.0`, which admits 0.13.0 (2026-10-17), and 0.13.0 renamed what 0.22.1 imports, so `import kyvvu` fails. Bump only after re-running all four scenarios.
+- `run.sh` pins `SHADI_VERSION=0.2.0` for the installer (override with the variable). Unpinned, the installer resolves "latest" across all AGNTCY releases and, since `agntcy-agentbridge-cli-v0.3.0`, aborts: `latest release tag agntcy-agentbridge-cli-v0.3.0 does not match agntcy-shadi-cli-v<version>`. The installer places `shadictl` in `/usr/local/bin` or `~/.local/bin`.
 - Landlock is inherited by all descendants; `subprocess.run` needs no configuration.
 - Network facts below were checked on shadictl 0.2.0, Linux. The 0.1.11 findings (agntcy/shadi #340, #430, #431) are fixed in 0.2.0.
 - `net_allow` with `shadictl --watch-policy` (loopback proxy, HTTP and SOCKS5): the allowed host is reachable and any other host gets `403` from the proxy. An entry `host:port` allows that port only: with `example.com:443`, `http://example.com` is refused.
