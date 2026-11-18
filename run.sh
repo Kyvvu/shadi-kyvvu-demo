@@ -4,6 +4,7 @@
 #   ./run.sh setup     install shadictl, create the venv, prepare the two directories
 #   ./run.sh demo      run the four scenarios in sequence, pausing between them
 #   ./run.sh 1|2|3a|3b run one scenario
+#   ./run.sh examples  run the three further Kyvvu policies in examples/ and check their outcomes
 #   ./run.sh clean     remove the two directories
 #
 # Nothing here needs a Kyvvu account or network access after setup.
@@ -100,6 +101,7 @@ case "${1:-}" in
     run3a; read -rp "   [enter for 3b] "
     run3b
     bold "trace of every run: $OUT/kyvvu-trace.jsonl" ;;
+  examples) need; (cd "$PKG/examples" && "$PY" run_examples.py) ;;
   clean) rm -rf "$AGENT" "$OUT"; echo "removed $AGENT and $OUT" ;;
-  *) sed -n '2,9p' "$0"; exit 2 ;;
+  *) sed -n '2,10p' "$0"; exit 2 ;;
 esac

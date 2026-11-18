@@ -1,0 +1,15 @@
+name: "Customer records scoped to the login"
+version: "1.0.0"
+policies:
+  - name: "Query only the customer that logged in"
+    description: |
+      query_customer_records may only be called with the customer_id that
+      the authenticate step returned earlier in the same task.
+    rule_type: input_equals_history_output
+    params:
+      source_step_name: authenticate
+      source_output_field: result.customer_id
+      target_input_field: customer_id
+      target_step_names: ["query_customer_records"]
+    severity: critical
+    enforcement_point: step_execution

@@ -1,0 +1,15 @@
+name: "Deleting a resource requires human approval"
+version: "1.0.0"
+policies:
+  - name: "Delete requires a human approval directly before it"
+    description: |
+      A step.resource DELETE must be directly preceded by a human gate
+      whose decision is pass.
+    rule_type: step_requires_gate
+    params:
+      target_kinds: ["step.resource"]
+      target_verb: DELETE
+      gate_kind: human
+      max_steps_since_gate: 1
+    severity: critical
+    enforcement_point: step_execution

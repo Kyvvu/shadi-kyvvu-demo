@@ -94,3 +94,8 @@ jobs:
           ./run.sh 3b 2>&1 | tee out-3b.txt
           grep -q 'PermissionError' out-3b.txt
           grep -q 'agent directory unchanged' out-3b.txt
+
+      - name: "examples: three further Kyvvu policies, each outcome checked"
+        run: |
+          ./run.sh examples | tee out-examples.txt
+          grep -q 'all outcomes as expected' out-examples.txt
