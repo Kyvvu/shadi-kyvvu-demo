@@ -1,0 +1,29 @@
+name: "No write to an external target after a confidential read"
+version: "1.0.0"
+policies:
+  - name: "No external write after a confidential read"
+    description: |
+      A step.resource POST to an external target is refused when the task
+      earlier read data classified as confidential.
+    rule_type: any_of
+    params:
+      conditions:
+        - rule_type: not
+          params:
+            condition:
+              rule_type: current_is
+              params:
+                kind: step.resource
+                verb: POST
+                property_filter: {"target.trust": "external"}
+        - rule_type: not
+          params:
+            condition:
+              rule_type: history_contains
+              params:
+                kind: step.resource
+                verb: GET
+                count_attempts: false
+                property_filter: {"data.classification": "confidential"}
+    severity: critical
+    enforcement_point: step_execution

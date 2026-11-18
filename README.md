@@ -83,13 +83,18 @@ generated directories.
 | `agent.py` | the agent: `write_code` (a Kyvvu `step.resource`), `run_code` (a `step.exec`), modes `benign` / `tamper`, flag `--no-gate` |
 | `demo-manifest.yaml` | the **Kyvvu policy**: `step_requires_gate` on `step.exec` |
 | `sandbox.json` | the **SHADI sandbox policy** (template): read `my-agent/`, write `agent-out/` only, no network. `setup` fills in the two paths |
-| `run.sh` | `setup`, `demo`, `1`, `2`, `3a`, `3b`, `clean` |
+| `run.sh` | `setup`, `demo`, `1`, `2`, `3a`, `3b`, `examples`, `clean` |
+| `examples/` | three further Kyvvu policies, a custom rule function, and a script that checks their outcomes (`./run.sh examples`); see [examples/README.md](examples/README.md) |
 | `AGENTS.md` | the invariants the demo depends on (e.g. `shadictl` must run from `agent-out/`). Read before changing anything |
 
 `setup` generates `my-agent/` (agent, manifest, rendered sandbox policy, venv;
 read-only under SHADI, git-tracked so `git status` is the tamper check) and
 `agent-out/` (the only writable directory: `scratch.py`, `result.txt`,
 `kyvvu-trace.jsonl`). Neither is committed.
+
+## Further Kyvvu policies
+
+The demo has one Kyvvu policy. [`examples/`](examples/README.md) has three more, for cases where the order of the agent's steps matters: no write to an external target after a read of confidential data, a delete only directly after a human approval, and a query scoped to the customer that logged in. The last one uses a custom rule function of a few lines. `./run.sh examples` runs them and checks each outcome.
 
 ## Proceeding from here
 
