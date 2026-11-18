@@ -28,12 +28,24 @@ need() { [ -x "$PY" ] || { echo "run ./run.sh setup first"; exit 1; }; }
 
 setup() {
   command -v shadictl >/dev/null || {
-    echo "installing shadictl (https://agntcy.github.io/shadi/install.sh)"
-    curl -fsSL https://agntcy.github.io/shadi/install.sh | bash
-    export PATH="$HOME/.local/bin:$PATH"
+    if [ "$(uname -s)" = "Darwin" ]; then
+      # SHADI's install.sh supports Linux only. On macOS its documented route is
+      # Homebrew, which installs the version of the formula (not SHADI_VERSION).
+      command -v brew >/dev/null || {
+        echo "shadictl is not installed. On macOS it is installed with Homebrew (https://brew.sh):"
+        echo "  brew tap agntcy/shadi https://github.com/agntcy/shadi && brew install agntcy/shadi/shadictl"
+        exit 1
+      }
+      echo "installing shadictl with Homebrew (https://agntcy.github.io/shadi/install/)"
+      brew tap agntcy/shadi https://github.com/agntcy/shadi && brew install agntcy/shadi/shadictl
+    else
+      echo "installing shadictl (https://agntcy.github.io/shadi/install.sh)"
+      curl -fsSL https://agntcy.github.io/shadi/install.sh | bash
+      export PATH="$HOME/.local/bin:$PATH"
+    fi
   }
   command -v shadictl >/dev/null || {
-    echo "shadictl not on PATH. If the installer could not resolve the latest release, pin it:"
+    echo "shadictl not on PATH. On Linux, if the installer could not resolve the latest release, pin it:"
     echo "  SHADI_VERSION=0.2.0 ./run.sh setup"
     exit 1
   }
