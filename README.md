@@ -38,9 +38,11 @@ set for the process tree, and that Kyvvu itself cannot be altered.
 ./run.sh demo      # the four scenarios below, pausing between them
 ```
 
-Requirements: `python3` (3.12 or newer), `git`, `curl`. If the installer cannot
-resolve the latest SHADI release (GitHub API unreachable or rate-limited), run
-`SHADI_VERSION=0.2.0 ./run.sh setup`.
+Requirements: `python3` (3.12 or newer), `git`, `curl`. If `shadictl` is not
+installed, `setup` installs it: on Linux with SHADI's install script, on macOS
+with [Homebrew](https://brew.sh) (`brew install agntcy/shadi/shadictl`). If the
+Linux installer cannot resolve the latest SHADI release (GitHub API unreachable
+or rate-limited), run `SHADI_VERSION=0.2.0 ./run.sh setup`.
 
 ## The four scenarios
 
